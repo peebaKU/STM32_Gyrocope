@@ -3,14 +3,18 @@
 #include <Adafruit_Sensor.h>
 #include <Wire.h>
 
+
+//SCL=> D5 , SDA=> D4
+#define interrupt_outpt D12
 void printGrant(float, float, float);
 
-
+bool status_ship = false;
 
 Adafruit_MPU6050 mpu;
 
 void setup(void) {
   Serial.begin(115200);
+  pinMode(interrupt_outpt, OUTPUT);
   pinMode(LED_BUILTIN, OUTPUT);
   while (!Serial)
     delay(10);
@@ -99,11 +103,24 @@ void loop() {
   
   if(gran_z < -1.00 ){
     digitalWrite(LED_BUILTIN, HIGH);
-    delay(10);                     
+    delay(10);
+    if(!status_ship){
+      digitalWrite(interrupt_outpt, HIGH);
+      delay(100);
+      digitalWrite(interrupt_outpt, LOW);
+      status_ship=!status_ship;
+    }
+
   }
   else{
     digitalWrite(LED_BUILTIN, LOW); 
     delay(10); 
+    if(status_ship){
+      digitalWrite(interrupt_outpt, HIGH);
+      delay(100);
+      digitalWrite(interrupt_outpt, LOW);
+      status_ship=!status_ship;
+    }
   }
   printGrant(gran_x, gran_y, gran_z);
   delay(500);
